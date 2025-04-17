@@ -7,7 +7,7 @@ public class Control {
     public static void main(String[] args) {
         CsvReader reader = new CsvReader(); 
         
-        String filePath = "data.csv"; 
+        String filePath = "Data.csv"; 
         
         try {
             ArrayList<String> rows = reader.readCSVFile(filePath); 

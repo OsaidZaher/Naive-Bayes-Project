@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 public class CsvReader {
 
-    // Method to read csv file and if file not found throw error
+
     public ArrayList<String> readCSVFile(String filePath) throws FileNotFoundException {
         ArrayList<String> rows = new ArrayList<>();
         File file = new File(filePath); 

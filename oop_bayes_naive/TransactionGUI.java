@@ -6,16 +6,14 @@ public class TransactionGUI extends JFrame {
     JComboBox<String> transactionComboBox, paymentTypeComboBox;
     JCheckBox customerVerifiedYesCheckBox, customerVerifiedNoCheckBox;
     JCheckBox weekendTransactionYesCheckBox, weekendTransactionNoCheckBox;
-    JButton addButton, calcButton;
+    JButton addButton, calcButton, trainButton;
     
     public TransactionGUI() {
         super("Transaction GUI");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(450, 300);
-        setLayout(new BorderLayout());
 
         JPanel CheckBoxPanel = new JPanel(new GridLayout(4, 2, 10, 10));
-        CheckBoxPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
         CheckBoxPanel.add(new JLabel("Transaction Type:", JLabel.RIGHT));
         String[] transactionOptions = {"Instore", "Online"};
@@ -58,16 +56,18 @@ public class TransactionGUI extends JFrame {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         addButton = new JButton("Add value");
         calcButton = new JButton("Calculate Probability");
+        trainButton = new JButton("Train");
         buttonPanel.add(addButton);
         buttonPanel.add(calcButton);
+        buttonPanel.add(trainButton);
         
         add(CheckBoxPanel, BorderLayout.NORTH);
         add(buttonPanel, BorderLayout.SOUTH);
         
-        setLocationRelativeTo(null);
     }
 
     public static void main(String[] args) {
+        // auto generated using intellisence no idea what this does 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 new TransactionGUI().setVisible(true);
