@@ -1,41 +1,26 @@
-
 import java.util.ArrayList;
-
-
+import java.util.Map;
 
 public class Control {
     public static void main(String[] args) {
-        CsvReader reader = new CsvReader(); 
-        
-        String filePath = "Data.csv"; 
+        CsvReader reader = new CsvReader();
+        String filePath = "Data.csv";
         
         try {
-            ArrayList<String> rows = reader.readCSVFile(filePath); 
+            ArrayList<String> rows = reader.readCSVFile(filePath);
             
-            System.out.println("Contents of the csv file are:");
-            for (String row : rows) {
-                System.out.println(row);
+            // Create and print the HashMap
+            Map<String, int[]> frequencyTable = HashMapMaker.HashMap(rows);
+            
+            System.out.println("\nFrequency Table");
+            for (Map.Entry<String, int[]> entry : frequencyTable.entrySet()) {
+                String permutation = entry.getKey();
+                int[] counts = entry.getValue();
+                System.out.println(permutation + " -> isTransactionPending?"+ "  Yes count: " + counts[0] + ", No count: " + counts[1]);
             }
-
-            String newRow = "Low,Positive,Strong,Available,Yes";
-            reader.writeRowToCSV(filePath, newRow);
-            System.out.println("\nNew row added to the CSV file.");
-            
-            rows = reader.readCSVFile(filePath);
-            
-            System.out.println("\nUpdated contents of the csv file are:");
-            for (String row : rows) {
-                System.out.println(row);
-            }
-
-
             
         } catch (Exception e) {
             System.err.println("An error occurred: " + e.getMessage());
         }
-
-
-
-        
     }
 }

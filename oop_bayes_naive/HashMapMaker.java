@@ -2,18 +2,13 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
-
-
-// hashmap for each permutation with yes and no count
 public class HashMapMaker {
     public static Map<String, int[]> HashMap(ArrayList<String> rows) {
+        Map<String, int[]> permutation = new HashMap<>();
 
-        Map<String,int[]> permutation = new HashMap<>();
-
-        for(int i =1; i< rows.size(); i++){
-
+        for(int i = 1; i < rows.size(); i++) {
             String row = rows.get(i);
-            String[]  column = row.split(",");
+            String[] column = row.split(",");
 
             String transactionType = column[0].trim();
             String paymentMethod = column[1].trim();
@@ -21,21 +16,23 @@ public class HashMapMaker {
             String weekendTransaction = column[3].trim();
             String isPaymentPending = column[4].trim();
 
-            String permutationKey = transactionType +','+ paymentMethod + ','+ customerVerified + ',' + weekendTransaction + ',' + isPaymentPending;
+            String permutationKey = transactionType + ',' + paymentMethod + ',' + customerVerified + ',' + weekendTransaction;
+            
             if (!permutation.containsKey(permutationKey)) {
                 permutation.put(permutationKey, new int[]{0, 0});
             }
 
-            int counts[] = permutation.get(permutationKey);
-            if (isPaymentPending=="yes"){
+            int[] counts = permutation.get(permutationKey);
+            if (isPaymentPending.equalsIgnoreCase("yes")) {
                 counts[0]++;
-            }else{
+            } else {
                 counts[1]++;
             }
         }
 
-
-
         return permutation;
     }
 }
+
+
+

@@ -198,3 +198,6 @@ InStore,Card,No,No,No
 InStore,Card,Yes,No,No
 InStore,Card,Yes,Yes,No
 InStore,Card,No,Yes,No
+Instore,Bank Transfer,Yes,Yes,No
+Online,Card,Yes,No,Yes
+Online,Card,Yes,Yes,Yes

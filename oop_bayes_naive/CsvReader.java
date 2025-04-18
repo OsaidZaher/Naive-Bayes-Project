@@ -34,24 +34,5 @@ public class CsvReader {
         }
     }
 
-     public void writeRowToCSV(String filePath, String rowData) throws IOException {
-
-        // Method to write to csv file and throws exception error
-        FileWriter fw = new FileWriter(filePath, true); 
-        PrintWriter writer = null;
-        
-        try {
-            writer = new PrintWriter(fw);
-            writer.println(rowData); 
-        } finally {
-            if (writer != null) {
-                writer.close(); 
-            }
-        }
-    }
-
-
-   
-
-
+    
 }
