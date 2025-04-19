@@ -1,71 +1,79 @@
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
-import java.util.Formatter;
+import java.awt.event.ActionEvent;
+import java.util.Collections;
+import java.util.Map;
+import java.util.List;
 
 public class TransactionGUI extends JFrame {
 
-    JComboBox<String> transactionComboBox, paymentTypeComboBox;
-    JCheckBox customerVerifiedYesCheckBox, customerVerifiedNoCheckBox;
-    JCheckBox weekendTransferYesCheckBox, weekendTransferNoCheckBox;
-    JCheckBox isTransactionPendingYesCheckBox, isTransactionPendingNoCheckBox;
-    JButton addButton, calcButton, trainButton;
+    private JComboBox<String> transactionComboBox, paymentTypeComboBox;
+    private JCheckBox customerVerifiedYesCheckBox, customerVerifiedNoCheckBox;
+    private JCheckBox weekendTransferYesCheckBox, weekendTransferNoCheckBox;
+    private JCheckBox isTransactionPendingYesCheckBox, isTransactionPendingNoCheckBox;
+    private JButton addButton, calcButton, trainButton;
+    
+
+    private TransactionModel transactionModel;
+    private Map<String, int[]> trainedFrequencyTable;
 
     public TransactionGUI() {
         super("Transaction GUI");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JPanel mainPanel = new JPanel(new BorderLayout());
+        transactionModel = TransactionModel.getTransactionModel("Data.csv");
+        
 
-        JPanel CheckBoxPanel = new JPanel(new GridLayout(5, 2, 15, 15));
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        JPanel checkboxPanel = new JPanel(new GridLayout(5, 2, 15, 15));
 
         // Transaction Type Row
-        CheckBoxPanel.add(new JLabel("Transaction Type:", JLabel.RIGHT));
+        checkboxPanel.add(new JLabel("Transaction Type:", JLabel.RIGHT));
         String[] transactionOptions = {"Instore", "Online"};
         transactionComboBox = new JComboBox<>(transactionOptions);
-        CheckBoxPanel.add(transactionComboBox);
+        checkboxPanel.add(transactionComboBox);
 
         // Payment Method Row
-        CheckBoxPanel.add(new JLabel("Payment Method:", JLabel.RIGHT));
+        checkboxPanel.add(new JLabel("Payment Method:", JLabel.RIGHT));
         String[] paymentMethods = {"Bank Transfer", "Card"};
         paymentTypeComboBox = new JComboBox<>(paymentMethods);
-        CheckBoxPanel.add(paymentTypeComboBox);
+        checkboxPanel.add(paymentTypeComboBox);
 
         // User Verified Row
-        CheckBoxPanel.add(new JLabel("User Verified?", JLabel.RIGHT));
+        checkboxPanel.add(new JLabel("User Verified?", JLabel.RIGHT));
         JPanel verificationPanel = new JPanel();
         customerVerifiedYesCheckBox = new JCheckBox("Yes");
-        customerVerifiedNoCheckBox = new JCheckBox("No");
+        customerVerifiedNoCheckBox = new JCheckBox("No", true);
         ButtonGroup verificationGroup = new ButtonGroup();
         verificationGroup.add(customerVerifiedYesCheckBox);
         verificationGroup.add(customerVerifiedNoCheckBox);
         verificationPanel.add(customerVerifiedYesCheckBox);
         verificationPanel.add(customerVerifiedNoCheckBox);
-        CheckBoxPanel.add(verificationPanel);
+        checkboxPanel.add(verificationPanel);
 
         // Weekend Transfer Row
-        CheckBoxPanel.add(new JLabel("Weekend Transfer?", JLabel.RIGHT));
+        checkboxPanel.add(new JLabel("Weekend Transfer?", JLabel.RIGHT));
         JPanel weekendPanel = new JPanel();
         weekendTransferYesCheckBox = new JCheckBox("Yes");
-        weekendTransferNoCheckBox = new JCheckBox("No");
+        weekendTransferNoCheckBox = new JCheckBox("No", true);
         ButtonGroup weekendGroup = new ButtonGroup();
         weekendGroup.add(weekendTransferYesCheckBox);
         weekendGroup.add(weekendTransferNoCheckBox);
         weekendPanel.add(weekendTransferYesCheckBox);
         weekendPanel.add(weekendTransferNoCheckBox);
-        CheckBoxPanel.add(weekendPanel);
+        checkboxPanel.add(weekendPanel);
 
         // Transaction Pending Row
-        CheckBoxPanel.add(new JLabel("Is transaction pending?", JLabel.RIGHT));
+        checkboxPanel.add(new JLabel("Is transaction pending?", JLabel.RIGHT));
         JPanel pendingPanel = new JPanel();
         isTransactionPendingYesCheckBox = new JCheckBox("Yes");
-        isTransactionPendingNoCheckBox = new JCheckBox("No");
+        isTransactionPendingNoCheckBox = new JCheckBox("No", true);
         ButtonGroup pendingGroup = new ButtonGroup();
         pendingGroup.add(isTransactionPendingYesCheckBox);
         pendingGroup.add(isTransactionPendingNoCheckBox);
         pendingPanel.add(isTransactionPendingYesCheckBox);
         pendingPanel.add(isTransactionPendingNoCheckBox);
-        CheckBoxPanel.add(pendingPanel);
+        checkboxPanel.add(pendingPanel);
 
         // Button Panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
@@ -76,39 +84,57 @@ public class TransactionGUI extends JFrame {
         buttonPanel.add(calcButton);
         buttonPanel.add(trainButton);
 
-        addButton.addActionListener(e -> {
-            // terniary operators 
-            String transactionType = transactionComboBox.getSelectedItem().toString();
-            String paymentMethod = paymentTypeComboBox.getSelectedItem().toString();
-            String customerVerified = customerVerifiedYesCheckBox.isSelected() ? "Yes" : "No";
-            String weekendTransfer = weekendTransferYesCheckBox.isSelected() ? "Yes" : "No";
-            String transactionPending = isTransactionPendingYesCheckBox.isSelected() ? "Yes" : "No";
+        addButton.addActionListener(this::addTransaction);
+        calcButton.addActionListener(this::calculateProbability); 
 
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter("Data.csv", true))) {
-                // error handling if csv not exist or is empty
-                boolean fileExists = new File("Data.csv").exists();
-                boolean isEmpty = !fileExists || new File("Data.csv").length() == 0;
-
-                if (isEmpty) {
-                    writer.write("Transaction Type,Payment Method,Customer Verified,Weekend Transfer,Transaction Pending");
-                    writer.newLine();
-                }
-
-                writer.write(String.format("%s,%s,%s,%s,%s",
-                        transactionType, paymentMethod, customerVerified, weekendTransfer, transactionPending));
-                writer.newLine();
-                JOptionPane.showMessageDialog(null, "Data added successfully!");
-            } catch (IOException err) {
-                JOptionPane.showMessageDialog(null, "Error: " + err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
-        mainPanel.add(CheckBoxPanel, BorderLayout.CENTER);
+        mainPanel.add(checkboxPanel, BorderLayout.CENTER);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         add(mainPanel);
         setSize(450, 300);
     }
+
+    private void addTransaction(ActionEvent e) {
+        String transactionType = transactionComboBox.getSelectedItem().toString();
+        String paymentMethod = paymentTypeComboBox.getSelectedItem().toString();
+        String customerVerified = customerVerifiedYesCheckBox.isSelected() ? "Yes" : "No";
+        String weekendTransfer = weekendTransferYesCheckBox.isSelected() ? "Yes" : "No";
+        String transactionPending = isTransactionPendingYesCheckBox.isSelected() ? "Yes" : "No";
+
+        Transaction transaction = new Transaction(
+                transactionType,
+                paymentMethod,
+                customerVerified,
+                weekendTransfer,
+                transactionPending
+        );
+
+        transactionModel.addTransaction(transaction);
+        JOptionPane.showMessageDialog(null, "Data added successfully!");
+    }
+
+
+private void calculateProbability(ActionEvent e) {
+    if (trainedFrequencyTable == null) {
+        JOptionPane.showMessageDialog(null, "Please train the model first.");
+        return;
+    }
+
+    String transactionType = transactionComboBox.getSelectedItem().toString();
+    String paymentMethod = paymentTypeComboBox.getSelectedItem().toString();
+    String customerVerified = customerVerifiedYesCheckBox.isSelected() ? "Yes" : "No";
+    String weekendTransfer = weekendTransferYesCheckBox.isSelected() ? "Yes" : "No";
+
+    String permutationKey = String.format("%s,%s,%s,%s",
+            transactionType, paymentMethod, customerVerified, weekendTransfer);
+
+    int[] counts = trainedFrequencyTable.getOrDefault(permutationKey, new int[]{0, 0});
+    String prediction = counts[0] > counts[1] ? "Yes" : "No";
+
+    JOptionPane.showMessageDialog(null, "Predicted: " + prediction);
+}
+
+    
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new TransactionGUI().setVisible(true));
