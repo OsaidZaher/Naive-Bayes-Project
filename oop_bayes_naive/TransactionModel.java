@@ -1,21 +1,27 @@
-    // TransactionModel.java
     import java.io.*;
     import java.util.ArrayList;
     import java.util.List;
 
     public class TransactionModel {
+
+        // initilizing variables 
         private List<Transaction> transactions;
         private String filePath;
         private static TransactionModel TransactionModel;
 
+
+        // construtor using private to ensure singleton design pattern where one instance of Transaction model exists, not accessed      
         private TransactionModel(String filePath) {
             this.filePath = filePath;
+
+            // instance of list transaction already exist
             this.transactions = new ArrayList<>();
             this.loadTransactions();
             
         }
 
-        public static synchronized TransactionModel getTransactionModel(String filePath) {
+        // only create instance of transactionModel if it does not exist singleton design, this is the accessed function
+        public static TransactionModel getTransactionModel(String filePath) {
             if (TransactionModel == null) {
                 TransactionModel = new TransactionModel(filePath);
             }
@@ -23,19 +29,27 @@
         }
 
         private void loadTransactions() {
+
+            // new file pointer
             File file = new File(filePath);
-            if (!file.exists()) return;
 
+            //error handling not existent file
+            if (!new File(filePath).exists()) {
+                System.err.println("file does not exist");
+                return;
+            }
+
+            // new buffer reader instance
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+
+                //line to read and skip first line because it is headers    
                 String line;
-                boolean isFirstLine = true;
+                reader.readLine();
 
+                // while loop to add transactions
                 while ((line = reader.readLine()) != null) {
-                    if (isFirstLine) {
-                        isFirstLine = false;
-                        continue;
-                    }
-
+                    
+                    // comma delimtted file so split using the comma
                     String[] columns = line.split(",");
                     transactions.add(new Transaction(
                             columns[0].trim(),
@@ -51,17 +65,17 @@
             }
         }
 
+
+        // adding transaction method and saving it to the file
         public void addTransaction(Transaction transaction) {
             transactions.add(transaction);
-            saveTransaction(transaction);
-        }
-
-        private void saveTransaction(Transaction transaction) {
+            
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, true))) {
-                if (!new File(filePath).exists() || new File(filePath).length() == 0) {
-                    writer.write("Transaction Type,Payment Method,Customer Verified,Weekend Transfer,Transaction Pending");
-                    writer.newLine();
+                if (!new File(filePath).exists()) {
+                    System.err.println("file does not exist");
+                    return;
                 }
+                
                 writer.write(transaction.toString());
                 writer.newLine();
             } catch (IOException e) {
@@ -69,6 +83,8 @@
             }
         }
 
+
+        //encapsulation
         public List<Transaction> getTransactions() {
             return new ArrayList<>(transactions);
         }

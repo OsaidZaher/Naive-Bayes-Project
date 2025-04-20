@@ -1,11 +1,11 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.Collections;
-import java.util.Map;
+import java.awt.event.ActionListener;
 import java.util.List;
 
 public class TransactionGUI extends JFrame {
+
 
     private JComboBox<String> transactionComboBox, paymentTypeComboBox;
     private JCheckBox customerVerifiedYesCheckBox, customerVerifiedNoCheckBox;
@@ -13,17 +13,19 @@ public class TransactionGUI extends JFrame {
     private JCheckBox isTransactionPendingYesCheckBox, isTransactionPendingNoCheckBox;
     private JButton addButton, calcButton, trainButton;
     
-
     private TransactionModel transactionModel;
-    private Map<String, int[]> trainedFrequencyTable;
+    private TrainTest modelTrainerTester;
 
     public TransactionGUI() {
-        super("Transaction GUI");
+        super("Transaction Predictor");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        transactionModel = TransactionModel.getTransactionModel("Data.csv");
-        
 
+        // instnaces of model and train test class
+        transactionModel = TransactionModel.getTransactionModel("Data.csv");
+        modelTrainerTester = new TrainTest();
+
+        //creating 2 panels for better gui uex
         JPanel mainPanel = new JPanel(new BorderLayout());
         JPanel checkboxPanel = new JPanel(new GridLayout(5, 2, 15, 15));
 
@@ -44,9 +46,6 @@ public class TransactionGUI extends JFrame {
         JPanel verificationPanel = new JPanel();
         customerVerifiedYesCheckBox = new JCheckBox("Yes");
         customerVerifiedNoCheckBox = new JCheckBox("No", true);
-        ButtonGroup verificationGroup = new ButtonGroup();
-        verificationGroup.add(customerVerifiedYesCheckBox);
-        verificationGroup.add(customerVerifiedNoCheckBox);
         verificationPanel.add(customerVerifiedYesCheckBox);
         verificationPanel.add(customerVerifiedNoCheckBox);
         checkboxPanel.add(verificationPanel);
@@ -56,9 +55,6 @@ public class TransactionGUI extends JFrame {
         JPanel weekendPanel = new JPanel();
         weekendTransferYesCheckBox = new JCheckBox("Yes");
         weekendTransferNoCheckBox = new JCheckBox("No", true);
-        ButtonGroup weekendGroup = new ButtonGroup();
-        weekendGroup.add(weekendTransferYesCheckBox);
-        weekendGroup.add(weekendTransferNoCheckBox);
         weekendPanel.add(weekendTransferYesCheckBox);
         weekendPanel.add(weekendTransferNoCheckBox);
         checkboxPanel.add(weekendPanel);
@@ -68,39 +64,54 @@ public class TransactionGUI extends JFrame {
         JPanel pendingPanel = new JPanel();
         isTransactionPendingYesCheckBox = new JCheckBox("Yes");
         isTransactionPendingNoCheckBox = new JCheckBox("No", true);
-        ButtonGroup pendingGroup = new ButtonGroup();
-        pendingGroup.add(isTransactionPendingYesCheckBox);
-        pendingGroup.add(isTransactionPendingNoCheckBox);
+   
         pendingPanel.add(isTransactionPendingYesCheckBox);
         pendingPanel.add(isTransactionPendingNoCheckBox);
         checkboxPanel.add(pendingPanel);
 
         // Button Panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        addButton = new JButton("Add value");
-        calcButton = new JButton("Calculate Probability");
-        trainButton = new JButton("Train");
+        addButton = new JButton("Add Transaction");
+        calcButton = new JButton("Predict");
+        trainButton = new JButton("Train Model");
         buttonPanel.add(addButton);
         buttonPanel.add(calcButton);
         buttonPanel.add(trainButton);
 
-        addButton.addActionListener(this::addTransaction);
-        calcButton.addActionListener(this::calculateProbability); 
 
-        mainPanel.add(checkboxPanel, BorderLayout.CENTER);
+        // action listeners lambda referene 
+        calcButton.addActionListener(this::predictTransaction);
+
+        // other ways to write it
+        addButton.addActionListener(e -> this.addTransactionAction(e));
+
+        //other other way to write it
+        trainButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                trainAndEvaluateAction(e);
+            }
+        });
+
+
+        mainPanel.add(checkboxPanel, BorderLayout.NORTH);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         add(mainPanel);
-        setSize(450, 300);
+        setSize(400, 300);
     }
 
-    private void addTransaction(ActionEvent e) {
+    
+    private void addTransactionAction(ActionEvent e) {
         String transactionType = transactionComboBox.getSelectedItem().toString();
         String paymentMethod = paymentTypeComboBox.getSelectedItem().toString();
+
+        // tertinary operators, if checkbox is selected the string value is "Yes" else "No"
         String customerVerified = customerVerifiedYesCheckBox.isSelected() ? "Yes" : "No";
         String weekendTransfer = weekendTransferYesCheckBox.isSelected() ? "Yes" : "No";
         String transactionPending = isTransactionPendingYesCheckBox.isSelected() ? "Yes" : "No";
 
+        // new transaction instance with gui input
         Transaction transaction = new Transaction(
                 transactionType,
                 paymentMethod,
@@ -110,33 +121,56 @@ public class TransactionGUI extends JFrame {
         );
 
         transactionModel.addTransaction(transaction);
-        JOptionPane.showMessageDialog(null, "Data added successfully!");
+        JOptionPane.showMessageDialog(this, "Transaction added successfully!");
     }
 
+    private void predictTransaction(ActionEvent e) {
 
-private void calculateProbability(ActionEvent e) {
-    if (trainedFrequencyTable == null) {
-        JOptionPane.showMessageDialog(null, "Please train the model first.");
-        return;
-    }
+        // ensure model trained
+        if (modelTrainerTester.getTrainedFrequencyTable() == null) {
+            JOptionPane.showMessageDialog(this, "Please train the model first.");
+            return;
+        }
 
-    String transactionType = transactionComboBox.getSelectedItem().toString();
-    String paymentMethod = paymentTypeComboBox.getSelectedItem().toString();
-    String customerVerified = customerVerifiedYesCheckBox.isSelected() ? "Yes" : "No";
-    String weekendTransfer = weekendTransferYesCheckBox.isSelected() ? "Yes" : "No";
+        String transactionType = transactionComboBox.getSelectedItem().toString();
+        String paymentMethod = paymentTypeComboBox.getSelectedItem().toString();
 
-    String permutationKey = String.format("%s,%s,%s,%s",
+        // tertinary operators, if checkbox is selected the string value is "Yes" else "No"
+        String customerVerified = customerVerifiedYesCheckBox.isSelected() ? "Yes" : "No";
+        String weekendTransfer = weekendTransferYesCheckBox.isSelected() ? "Yes" : "No";
+
+        // calling make prediction method
+        String prediction = modelTrainerTester.makePrediction(
             transactionType, paymentMethod, customerVerified, weekendTransfer);
-
-    int[] counts = trainedFrequencyTable.getOrDefault(permutationKey, new int[]{0, 0});
-    String prediction = counts[0] > counts[1] ? "Yes" : "No";
-
-    JOptionPane.showMessageDialog(null, "Predicted: " + prediction);
-}
-
+        
+        System.out.println("\n--- New Prediction ---");
+        System.out.println("Transaction Type: " + transactionType);
+        System.out.println("Payment Method: " + paymentMethod);
+        System.out.println("Customer Verified: " + customerVerified);
+        System.out.println("Weekend Transfer: " + weekendTransfer);
+        System.out.println("Prediction: Transaction is " + 
+                         (prediction.equals("Yes") ? " pending" : "not pending"));
+        
+        // Display the prediction
+        JOptionPane.showMessageDialog(this, 
+        // tertinary operators for result display
+            "Prediction: Transaction will " + (prediction.equals("Yes") ? "be pending" : "not be pending"),
+            "Prediction Result", 
+            JOptionPane.INFORMATION_MESSAGE);
+    }
     
+    private void trainAndEvaluateAction(ActionEvent e) {
+        List<Transaction> allTransactions = transactionModel.getTransactions();
+
+        // Train and evaluate method call
+        modelTrainerTester.trainAndEvaluate(allTransactions);
+        
+        JOptionPane.showMessageDialog(this, 
+            "Model has been trained, \nnow you can predict.\nCheck console for evaluation report.");
+    }
 
     public static void main(String[] args) {
+        // auto created from intellisence but this is the creating new instance of the gui
         SwingUtilities.invokeLater(() -> new TransactionGUI().setVisible(true));
     }
 }

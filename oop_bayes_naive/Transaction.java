@@ -1,12 +1,15 @@
 
 
     public class Transaction {
+
+        // intilizing variables 
         private String transactionType;
         private String paymentMethod;
         private String customerVerified;
         private String weekendTransfer;
         private String transactionPending;
 
+        // creating object
         public Transaction(String transactionType, String paymentMethod, String customerVerified, String weekendTransfer, String transactionPending) {
             
             //constructor
@@ -32,6 +35,7 @@
         public void setTransactionPending(String transactionPending){this.transactionPending = transactionPending;}
 
         @Override
+        // string method to add to csv
         public String toString() {
             return String.format("%s,%s,%s,%s,%s",
                     transactionType, paymentMethod, customerVerified, weekendTransfer, transactionPending);
