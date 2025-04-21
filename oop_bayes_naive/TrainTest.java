@@ -132,7 +132,7 @@ public class TrainTest {
             }
         }
         
-        // return the accuracy of the model using lassification accuracy metric
+        // return the accuracy of the model using classification accuracy metric
         return (double) correct / testingData.size();
     }
     
@@ -158,7 +158,6 @@ public class TrainTest {
         return prediction;
     }
     
-    // encapsulation because private 
     public Map<String, int[]> getTrainedFrequencyTable() {
         return frequencyTable;
     }
