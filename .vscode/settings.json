@@ -1,0 +1,5 @@
+{
+  "java.project.sourcePaths": ["src", "oop_bayes_naive", "main"],
+  "java.project.outputPath": "bin",
+  "java.project.referencedLibraries": ["lib/**/*.jar"]
+}
