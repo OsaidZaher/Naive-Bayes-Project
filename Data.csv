@@ -12,7 +12,7 @@ InStore,Card,Yes,No,No
 InStore,Card,No,Yes,Yes
 InStore,Card,No,No,No
 InStore,BankTransfer,Yes,Yes,Yes
-InStore,BankTransfer,Yes,No,No  
+InStore,BankTransfer,Yes,No,No
 InStore,BankTransfer,No,Yes,No
 InStore,BankTransfer,No,No,Yes
 Online,Card,Yes,Yes,Yes
@@ -198,9 +198,3 @@ InStore,Card,No,No,No
 InStore,Card,Yes,No,No
 InStore,Card,Yes,Yes,No
 InStore,Card,No,Yes,No
-Online,Card,No,Yes,No
-Online,Card,Yes,Yes,No
-Online,BankTransfer,Yes,No,No
-Instore,Bank Transfer,No,No,No
-Instore,Bank Transfer,No,Yes,No
-Online,Card,No,No,No
